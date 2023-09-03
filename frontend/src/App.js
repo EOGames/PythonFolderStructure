@@ -6,13 +6,17 @@ import FolderStructure from './components/FolderStructure';
 function App() {
   const [folderData, setFolderData] = useState(null);
 
-  useEffect(() => {
-    // Fetch your JSON data here and set it in the state
-    // For example, if you have the JSON file locally:
-    import('./directory_structure.json').then((data) => {
-      setFolderData(data);
-    });
+  useEffect(() => { 
+    getData();
   }, []);
+
+  const getData = async()=>
+  {
+    let data = await fetch('http://localhost:8000/getData');
+    data = await data.json();
+    console.log('Data===========',data);
+    setFolderData(data);
+  }
 
   return (
     <div className="App">

@@ -1,5 +1,22 @@
 import os
-import json
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Configure CORS
+origins = [
+    "http://localhost",  # Add your allowed origins here
+    "http://localhost:3000",  # Example: Add a frontend development server
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # You can restrict HTTP methods if needed
+    allow_headers=["*"],  # You can restrict headers if needed
+)
 
 # Define a set of human-readable text file extensions
 TEXT_EXTENSIONS = {".txt", ".js", ".py", ".c", ".cpp", ".java", ".html", ".css", ".ts"}
@@ -46,28 +63,18 @@ def get_directory_structure(root_dir):
     except Exception as e:
         print(f"Error while getting Structure: {e}")
 
-def convert_to_json(root_dir):
+def get_directory_structure_as_json(root_dir):
     """
     Converts the directory structure to a JSON object.
     """
     directory_structure = get_directory_structure(root_dir)
-    return json.dumps(directory_structure, indent=4)
+    return directory_structure
 
-# Set your static folder path here
-def startReading():
-    try:
-        working_dir = os.getcwd()
-        root_directory = "read_dir"
-        os.path.join(working_dir, root_directory)
-
-        if os.path.exists(root_directory):
-            json_data = convert_to_json(root_directory)
-            with open("directory_structure.json", "w", encoding="utf-8") as json_file:
-                json_file.write(json_data)
-            print("Directory structure saved as 'directory_structure.json'")
-        else:
-            print("The specified directory does not exist.")
-    except Exception as e:
-        print(f"Error While starting {e}")
-
-startReading()
+@app.get("/getData")
+def get_data(request: Request):
+    root_directory = "read_dir"  # Set your static folder path here
+    if os.path.exists(root_directory):
+        directory_structure = get_directory_structure_as_json(root_directory)
+        return directory_structure
+    else:
+        return {"error": "The specified directory does not exist."}
